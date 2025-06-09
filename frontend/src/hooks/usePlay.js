@@ -1,15 +1,25 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 
-let socketInstance = null; // Singleton socket instance
-
 const usePlay = () => {
+  const socketRef = useRef(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [roomId, setRoomId] = useState(null);
-  const [questions, setQuestions] = useState([]);
+  const [questions, setQuestions] = useState([{ text: "문제를 생각중 입니다..." }]);
   const [currentQuestion, setCurrentQuestion] = useState("");
   const { pathname } = useParams();
+  const [voteCounts, setVoteCounts] = useState({
+    totalVotes: 0,
+    yesVotes: 0,
+    noVotes: 0,
+  });
+
+  const handleVoteCounts = (data) => {
+    console.log(data);
+    setVoteCounts(data);
+  };
+
 
   const handleCurrentQuestion = (e) => {
     const { value } = e.target;
@@ -24,40 +34,51 @@ const usePlay = () => {
     } else {
       setRoomId(pathname);
     }
+  }, [pathname]);
 
-    if (!socketInstance) {
-      socketInstance = io(import.meta.env.VITE_API_URL); // Initialize socket instance
+  useEffect(() => {
+    if (!roomId) return;
+
+    if (!socketRef.current) {
+      socketRef.current = io(import.meta.env.VITE_API_URL);
     }
 
-    const socket = socketInstance;
+    const socket = socketRef.current;
 
-    if (roomId) {
-      socket.emit("joinRoom", roomId);
+    socket.emit("joinRoom", roomId);
 
-      socket.on("question:new", (data) => {
-        setQuestions((prevQuestions) => [...prevQuestions, data]);
+    const handleNewQuestion = (data) => {
+      setQuestions((prev) => {
+        const newData = [...prev];
+        newData[newData.length - 1].text = data.text;
+        return newData;
       });
+    };
 
-      socket.on("vote:update", (data) => {
-        console.log("Vote updated:", data);
-      });
-    }
+    const handleVoteUpdate = (data) => {
+      console.log("Vote updated:", data);
+    };
+
+    socket.on("question:new", handleNewQuestion);
+    socket.on("vote:update", handleVoteUpdate);
+    socket.on("vote:counts", handleVoteCounts);
 
     return () => {
-      socket.off("question:new");
-      socket.off("vote:update");
+      socket.off("question:new", handleNewQuestion);
+      socket.off("vote:update", handleVoteUpdate);
+      socket.off("vote:counts", handleVoteCounts);
     };
   }, [roomId]);
 
   const handleNewQuestion = () => {
     if (isAdmin && currentQuestion.trim()) {
-      socketInstance.emit("question:new", { roomId, text: currentQuestion });
+      socketRef.current?.emit("question:new", { roomId, text: currentQuestion });
       setCurrentQuestion("");
     }
   };
 
   const handleVote = (vote) => {
-    socketInstance.emit("vote", { roomId, vote });
+    socketRef.current?.emit("vote", { roomId, vote });
   };
 
   return {
@@ -67,6 +88,7 @@ const usePlay = () => {
     handleVote,
     handleCurrentQuestion,
     currentQuestion,
+    voteCounts
   };
 };
 

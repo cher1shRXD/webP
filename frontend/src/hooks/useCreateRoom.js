@@ -11,12 +11,12 @@ export const useJoinRoom = () => {
   const createRoom = async () => {
     try {
       setLoading(true);
-      const data = await customFetch.post('/room');
+      const data = await customFetch.post('/rooms');
       if(data) {
-        setRoomCode(data.roomCode);
+        setRoomCode(data.code);
       }
     } catch (error) {
-      notification.error({ message: "방 생성에 실패했습니다.", description: error });
+      notification.error({ message: "방 생성에 실패했습니다.", description: `${error}` });
     } finally {
       setLoading(false);
     }

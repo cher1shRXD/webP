@@ -9,8 +9,13 @@ import cors from 'cors';
 
 const app = express();
 const httpServer = createServer(app);
-const io = new Server(httpServer);
-const PORT = process.env.PORT || 4000;
+const io = new Server(httpServer, {
+  cors: {
+    origin: 'http://localhost:5173',
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTION'],
+    allowedHeaders: ['Content-Type'],
+  },
+});
 
 const AppDataSource = new DataSource({
   type: 'mariadb',
@@ -18,7 +23,7 @@ const AppDataSource = new DataSource({
   port: 3306,
   username: 'root',
   password: 'Tw080401!!**',
-  database: 'yes_no_app',
+  database: 'yes_or_no',
   synchronize: true,
   logging: false,
   entities: [Room, Question],
@@ -34,19 +39,17 @@ AppDataSource.initialize()
 
 app.use(express.json());
 app.use(cors({
-  origin: 'http://localhost:5174',
-  methods: ['GET', 'POST'],
+  origin: 'http://localhost:5173',
+  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTION'],
   allowedHeaders: ['Content-Type'],
 }));
 
-// REST API for room creation
 app.post('/rooms', async (req, res) => {
   const room = new Room();
   await AppDataSource.manager.save(room);
-  res.json({ roomId: room.id });
+  res.status(201).json({ code: room.id });
 });
 
-// REST API for fetching questions
 app.get('/rooms/:id/questions', async (req, res) => {
   const questions = await AppDataSource.manager.find(Question, {
     where: { roomId: parseInt(req.params.id, 10) },
@@ -54,7 +57,6 @@ app.get('/rooms/:id/questions', async (req, res) => {
   res.json(questions);
 });
 
-// WebSocket for real-time communication
 io.on('connection', (socket) => {
   console.log('A user connected');
 
@@ -75,6 +77,6 @@ io.on('connection', (socket) => {
   });
 });
 
-httpServer.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+httpServer.listen(8080, () => {
+  console.log(`Server is running on http://localhost:8080`);
 });

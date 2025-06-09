@@ -4,8 +4,8 @@ import { Room } from './Room';
 
 @Entity()
 export class Question {
-  @PrimaryGeneratedColumn()
-  id!: number;
+  @PrimaryGeneratedColumn("uuid")
+  id!: string;
 
   @Column()
   text!: string;

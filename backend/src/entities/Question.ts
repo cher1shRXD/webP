@@ -11,5 +11,5 @@ export class Question {
   text!: string;
 
   @ManyToOne(() => Room, (room) => room.id)
-  roomId!: number;
+  roomId!: string;
 }

@@ -51,10 +51,8 @@ app.post('/rooms', async (req, res) => {
 });
 
 app.get('/rooms/:id/questions', async (req, res) => {
-  const questions = await AppDataSource.manager.find(Question, {
-    where: { roomId: parseInt(req.params.id, 10) },
-  });
-  res.json(questions);
+  const questions = await AppDataSource.getRepository(Question).findOneBy({ roomId: req.params.id});
+  res.status(200).json(questions);
 });
 
 // --------------------------------------------
@@ -73,6 +71,7 @@ io.on('connection', (socket) => {
 
   socket.on('question:new', (data: { roomId: number; text: string }) => {
     io.to(data.roomId.toString()).emit('question:new', data);
+    
   });
 
   socket.on('vote', (data: { roomId: number; vote: 'yes' | 'no' }) => {

@@ -48,42 +48,41 @@ const Room = () => {
             ) : (
               <>
                 <button
-                  onClick={() => handleVote("yes")}
-                  className="bg-red-400 flex-1 px-4 py-2 rounded cursor-pointer">
+                  onClick={() => handleVote("YES")}
+                  className="bg-green-400 flex-1 px-4 py-2 rounded cursor-pointer">
                   종료
                 </button>
                 <button
-                  onClick={() => handleVote("no")}
-                  className="bg-blue-500 flex-1 px-4 py-2 rounded cursor-pointer">
+                  onClick={() => handleVote("NO")}
+                  className="bg-purple-400 flex-1 px-4 py-2 rounded cursor-pointer">
                   다음 질문
                 </button>
               </>
             )
           }
-          
         </div>
       ) : (
         <div className="flex gap-4">
           <button
             onClick={() => handleVote("yes")}
-            className="bg-blue-500 px-4 py-2 rounded">
+            className="bg-green-400 flex-1 px-4 py-2 rounded cursor-pointer">
             Yes
           </button>
           <button
             onClick={() => handleVote("no")}
-            className="bg-red-500 px-4 py-2 rounded">
+            className="bg-purple-400 flex-1 px-4 py-2 rounded cursor-pointer">
             No
           </button>
         </div>
       )}
       <div className="w-full h-30 border-x border-[#8B8B8B] mt-8 py-auto flex items-center justify-between text-xl font-jua">
         <div
-          className="h-20 bg-red-400 transition-all rounded-r-lg flex items-center justify-end overflow-hidden pr-4"
+          className="h-20 bg-green-400 transition-all rounded-r-lg flex items-center justify-end overflow-hidden pr-4"
           style={{ width: `${noVotesPercentage || 0}%` }}>
           <p>{voteCounts?.noVotes || 0} ({Math.round(noVotesPercentage || 0)}%)</p>
         </div>
         <div
-          className="h-20 bg-blue-400 transition-all rounded-l-lg flex items-center overflow-hidden pl-4"
+          className="h-20 bg-purple-400 transition-all rounded-l-lg flex items-center overflow-hidden pl-4"
           style={{ width: `${yesVotesPercentage || 0}%` }}>
           <p>{voteCounts?.yesVotes || 0} ({Math.round(yesVotesPercentage || 0)}%)</p>
         </div>
@@ -91,7 +90,7 @@ const Room = () => {
       <div className="w-full flex items-center gap-16 justify-center">
         <div className="flex flex-col items-center gap-2 font-jua">
           <p>총 투표수</p>
-          <p className="text-2xl">{voteCounts?.noVotes || 0 + voteCounts?.yesVotes || 0}</p>
+          <p className="text-2xl">{voteCounts.totalVotes || 0}</p>
         </div>
         <div className="flex flex-col items-center gap-2 font-jua text-">
           <p>YES 득표수</p>

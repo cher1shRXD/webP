@@ -8,12 +8,13 @@ const usePlay = () => {
   const [roomId, setRoomId] = useState(null);
   const [questions, setQuestions] = useState([{ text: "문제를 생각중 입니다..." }]);
   const [currentQuestion, setCurrentQuestion] = useState("");
-  const { pathname } = useParams();
+  const params = useParams();
   const [voteCounts, setVoteCounts] = useState({
     totalVotes: 0,
     yesVotes: 0,
     noVotes: 0,
   });
+  const roomKey = localStorage.getItem("roomKey");
 
   const handleVoteCounts = (data) => {
     console.log(data);
@@ -27,14 +28,15 @@ const usePlay = () => {
   };
 
   useEffect(() => {
-    const roomKey = localStorage.getItem("roomKey");
-    if (roomKey && roomKey.startsWith("admin-")) {
+    console.log(roomKey.split("-")[1])
+    console.log(params.code)
+    if (roomKey && roomKey.startsWith("admin-") && roomKey.split("admin-")[1] === params.code) {
       setIsAdmin(true);
-      setRoomId(roomKey.split("-")[1]);
+      setRoomId(params.code);
     } else {
-      setRoomId(pathname);
+      setRoomId(params.code);
     }
-  }, [pathname]);
+  }, [params.code]);
 
   useEffect(() => {
     if (!roomId) return;

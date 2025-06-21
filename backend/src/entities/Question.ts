@@ -11,5 +11,14 @@ export class Question {
   text!: string;
 
   @ManyToOne(() => Room, (room) => room.id)
-  roomId!: string;
+  room!: Room;
+
+  @Column()
+  totalCount!: number;
+
+  @Column()
+  yesCount!: number;
+
+  @Column()
+  noCount!: number;
 }

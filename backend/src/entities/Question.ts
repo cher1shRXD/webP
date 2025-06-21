@@ -13,12 +13,12 @@ export class Question {
   @ManyToOne(() => Room, (room) => room.id)
   room!: Room;
 
-  @Column()
+  @Column({ default: 0 })
   totalCount!: number;
 
-  @Column()
+  @Column({ default: 0 })
   yesCount!: number;
 
-  @Column()
+  @Column({ default: 0 })
   noCount!: number;
 }

@@ -94,7 +94,6 @@ app.post("/room/:id/next", async (req, res) => {
   }else{
     room.isWritingQuestion = true;
     await AppDataSource.manager.save(room);
-    // 방 상태가 바뀌면 실시간으로 알림
     io.emit('room:update', { roomId: room.id, isWritingQuestion: room.isWritingQuestion });
     res.status(200).json(room);
   }
@@ -105,7 +104,6 @@ app.get('/rooms/:id', async (req, res) => {
   if (!room) {
     res.status(404).json({ message: "can't find room" });
   } else {
-    // 질문 목록도 함께 반환
     const questions = await AppDataSource.getRepository(Question).find({ where: { room: { id: req.params.id } }, order: { id: 'ASC' } });
     res.status(200).json({ ...room, questions });
   }
@@ -113,6 +111,10 @@ app.get('/rooms/:id', async (req, res) => {
 
 io.on('connection', (socket) => {
   console.log('A user connected');
+
+  socket.on('room:end', async ({ code }) => {
+    io.emit('room:end', { code });
+  });
 });
 
 httpServer.listen(8080, () => {

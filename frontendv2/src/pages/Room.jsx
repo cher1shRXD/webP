@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { socket } from '../socket';
 import VoteBar from '../components/VoteBar';
+import { notification } from 'antd';
+import RoomResult from './RoomResult';
 
 export default function Room() {
   const { code } = useParams();
@@ -10,8 +12,9 @@ export default function Room() {
   const [room, setRoom] = useState(null);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState('question'); // question | vote
+  const [step, setStep] = useState('question');
   const [selected, setSelected] = useState(null);
+  const [ended, setEnded] = useState(false);
   const isAdmin = useRef(false);
 
   useEffect(() => {
@@ -23,13 +26,14 @@ export default function Room() {
     socket.on('room:update', handleRoomUpdate);
     socket.on('question:new', handleQuestionNew);
     socket.on('question:update', handleQuestionUpdate);
+    socket.on('room:end', handleRoomEnd);
     return () => {
       socket.off('room:update', handleRoomUpdate);
       socket.off('question:new', handleQuestionNew);
       socket.off('question:update', handleQuestionUpdate);
+      socket.off('room:end', handleRoomEnd);
       socket.disconnect();
     };
-    // eslint-disable-next-line
   }, [code]);
 
   const fetchRoom = async () => {
@@ -45,14 +49,13 @@ export default function Room() {
     }
   };
 
-  // 소켓 payload 직접 반영
   const handleRoomUpdate = (payload) => {
     setRoom(prev => ({ ...prev, ...payload }));
     if (payload.isWritingQuestion !== undefined) setStep(payload.isWritingQuestion ? 'question' : 'vote');
   };
   const handleQuestionNew = ({ question }) => {
     setRoom(prev => prev ? { ...prev, questions: [...(prev.questions || []), question] } : prev);
-    setSelected(question); // 새 질문이 오면 자동으로 해당 질문으로 이동
+    setSelected(question);
     setStep('vote');
   };
   const handleQuestionUpdate = ({ question }) => {
@@ -61,10 +64,6 @@ export default function Room() {
       const questions = (prev.questions || []).map(q => q.id === question.id ? question : q);
       return { ...prev, questions };
     });
-    // 디버깅용 로그
-    if (selected?.id === question.id) {
-      console.log('selected 업데이트:', question);
-    }
     setSelected(prev => (prev && prev.id === question.id ? question : prev));
   };
 
@@ -104,6 +103,27 @@ export default function Room() {
     }
   };
 
+  const handleRoomEnd = (payload) => {
+    if (isAdmin.current) {
+      setEnded(true);
+    } else {
+      notification.info({
+        message: '세션이 종료되었습니다',
+        description: '방장이 방을 종료했습니다.',
+        duration: 3
+      });
+      navigate('/')
+    }
+  };
+
+  const handleEndRoom = () => {
+    if (!window.confirm('정말로 방을 종료하시겠습니까?')) return;
+    setLoading(true);
+    socket.emit('room:end', { code });
+    setEnded(true);
+    setLoading(false);
+  };
+
   const total = selected?.totalCount || 0;
   const yes = selected?.yesCount || 0;
   const no = selected?.noCount || 0;
@@ -116,10 +136,43 @@ export default function Room() {
     }
   }, [room, selected]);
 
+  if (ended && isAdmin.current) {
+    return <RoomResult room={room} onExit={() => navigate('/')} />;
+  }
+  if (ended && !isAdmin.current) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-gray-900 text-white px-4">
+        <div className="w-full max-w-lg bg-gray-800 rounded-2xl shadow-xl p-8 flex flex-col items-center gap-6 border border-purple-700 mt-8">
+          <h1 className="text-3xl font-extrabold text-purple-300 mb-2">세션이 종료되었습니다</h1>
+          <div className="text-lg text-gray-200 mb-4">방장이 방을 종료했습니다.</div>
+          <button
+            className="w-full max-w-xs bg-gradient-to-r from-pink-500 to-yellow-500 text-white font-bold py-3 rounded-xl text-lg shadow-lg hover:scale-105 transition"
+            onClick={() => navigate('/')}
+          >
+            나가기
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-gray-900 text-white gap-8 px-4 py-8">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-gray-900 text-white gap-8 px-4 py-8 relative">
+      <div className="fixed top-4 right-4 z-50 bg-purple-800 bg-opacity-90 px-6 py-2 rounded-full shadow-lg border-2 border-purple-400 flex items-center gap-2">
+        <span className="text-sm font-bold tracking-widest text-purple-100">방 코드</span>
+        <span className="text-lg font-extrabold text-yellow-300">{code}</span>
+      </div>
+      <div className="fixed top-4 left-4 z-50">
+        {!isAdmin.current && !ended && (
+          <button
+            className="bg-gray-700 bg-opacity-80 border border-purple-400 text-white font-bold px-5 py-2 rounded-full shadow hover:bg-purple-700 transition"
+            onClick={() => navigate('/')}
+          >
+            나가기
+          </button>
+        )}
+      </div>
       <div className="w-full max-w-md bg-gray-800 rounded-2xl shadow-xl p-6 flex flex-col items-center gap-4 border border-purple-700">
-        <h2 className="text-2xl font-extrabold mb-2 tracking-wider text-purple-300">방 코드: <span className="text-white">{code}</span></h2>
         <ol className="w-full mb-4 flex flex-col gap-1">
           {room?.questions?.slice().reverse().map((q, i) => (
             <li
@@ -176,6 +229,15 @@ export default function Room() {
             disabled={loading}
           >
             다음 질문
+          </button>
+        )}
+        {isAdmin.current && !ended && (
+          <button
+            onClick={handleEndRoom}
+            className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg shadow-lg transition mb-2"
+            disabled={loading}
+          >
+            종료하기
           </button>
         )}
         <VoteBar yes={yes} no={no} total={total} />

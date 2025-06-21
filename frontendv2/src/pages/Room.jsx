@@ -103,7 +103,7 @@ export default function Room() {
     }
   };
 
-  const handleRoomEnd = (payload) => {
+  const handleRoomEnd = () => {
     if (isAdmin.current) {
       setEnded(true);
     } else {

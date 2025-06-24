@@ -1,5 +1,5 @@
 export default function VoteBar({ yes, no, total }) {
-  const yesP = total ? (yes / total) * 100 : 0;
+  const yesP = total ? (yes / total) * 100 : 0; // 백분율 구하기
   const noP = total ? (no / total) * 100 : 0;
   return (
     <div className="w-full max-w-md my-6">

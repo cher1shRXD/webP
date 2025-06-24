@@ -11,6 +11,11 @@ export const api = {
     if (!res.ok) throw new Error('방 정보 조회 실패');
     return res.json();
   },
+  isExistRoom: async (id) => {
+    const res = await fetch(`${BASE_URL}/rooms/${id}/exist`);
+    if (!res.ok) throw new Error('방 존재 유무 조회 실패');
+    return res.json();
+  },
   addQuestion: async (roomId, topic) => {
     const res = await fetch(`${BASE_URL}/rooms/${roomId}/questions`, {
       method: 'POST',

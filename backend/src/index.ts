@@ -55,6 +55,12 @@ app.get('/rooms/:id/questions', async (req, res) => {
   res.status(200).json(questions);
 });
 
+app.get('/rooms/:id/exist', async (req, res) => {
+  const { id } = req.params;
+  const isExist = await AppDataSource.getRepository(Room).existsBy({ id });
+  res.status(200).json(isExist);
+})
+
 app.post('/rooms/:id/questions', async (req, res) => {
   const { topic } = req.body;
   const question = new Question();

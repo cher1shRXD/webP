@@ -39,7 +39,7 @@ AppDataSource.initialize()
 
 app.use(express.json());
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: '*',
   methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTION'],
   allowedHeaders: ['Content-Type'],
 }));

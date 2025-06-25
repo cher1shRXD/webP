@@ -16,13 +16,17 @@ let Room = class Room {
 };
 exports.Room = Room;
 __decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)(),
-    __metadata("design:type", Number)
+    (0, typeorm_1.PrimaryGeneratedColumn)("uuid"),
+    __metadata("design:type", String)
 ], Room.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' }),
+    (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)
 ], Room.prototype, "createdAt", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ default: true }),
+    __metadata("design:type", Boolean)
+], Room.prototype, "isWritingQuestion", void 0);
 exports.Room = Room = __decorate([
     (0, typeorm_1.Entity)()
 ], Room);

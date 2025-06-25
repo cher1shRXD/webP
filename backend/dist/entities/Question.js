@@ -17,8 +17,8 @@ let Question = class Question {
 };
 exports.Question = Question;
 __decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)(),
-    __metadata("design:type", Number)
+    (0, typeorm_1.PrimaryGeneratedColumn)("uuid"),
+    __metadata("design:type", String)
 ], Question.prototype, "id", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
@@ -26,8 +26,20 @@ __decorate([
 ], Question.prototype, "text", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => Room_1.Room, (room) => room.id),
+    __metadata("design:type", Room_1.Room)
+], Question.prototype, "room", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ default: 0 }),
     __metadata("design:type", Number)
-], Question.prototype, "roomId", void 0);
+], Question.prototype, "totalCount", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ default: 0 }),
+    __metadata("design:type", Number)
+], Question.prototype, "yesCount", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ default: 0 }),
+    __metadata("design:type", Number)
+], Question.prototype, "noCount", void 0);
 exports.Question = Question = __decorate([
     (0, typeorm_1.Entity)()
 ], Question);

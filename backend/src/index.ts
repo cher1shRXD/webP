@@ -19,11 +19,11 @@ const io = new Server(httpServer, {
 
 const AppDataSource = new DataSource({
   type: 'mariadb',
-  host: 'localhost',
+  host: 'db',
   port: 3306,
-  username: 'root',
+  username: 'yesno',
   password: 'Tw080401!!**',
-  database: 'yes_or_no',
+  database: 'yes_no_app',
   synchronize: true,
   logging: false,
   entities: [Room, Question],
